@@ -1,0 +1,15 @@
+.book_container{
+    display: flex;
+    border: 1px solid pink;
+    margin-top: 20px;
+}
+.abc{
+    margin: 10px;
+    border: 1px solid skyblue;
+    width: 150px;
+}
+
+.input_text{
+    padding: 5px;
+    margin: 5px;
+}
