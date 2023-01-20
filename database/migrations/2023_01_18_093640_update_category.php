@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('books', function(Blueprint $table) {
-            $table->unsignedInteger('price')->nullable()->change();
+        Schema::table('categories', function (Blueprint $table) {
+            $table->dropUnique('categories_name_unique');
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('books', function(Blueprint $table) {
-            $table->unsignedInteger('price')->nullable(false)->change();
+        Schema::table('categories', function (Blueprint $table) {
+            $table->string("name")->unique()->change();
         });
     }
 };

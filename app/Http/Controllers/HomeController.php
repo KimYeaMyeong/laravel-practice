@@ -3,42 +3,67 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\Category;
+use App\Models\Brand;
+use App\Models\Modifylog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\BookCreateRequest;
+use Illuminate\Validation\Validator;
 
 class HomeController extends Controller {
-    // 웹 최초 진입 시 처리.
     public function index() {
         $books = Book::get();
-
-        return view('index', ['books' => $books]);
+        
+        return view('index', ['books' => $books, 'user' => Auth::user() ?? 'none']);
     }
 
     public function create(){
-        return view('create');
+        $category = Category::distinct()->get('name');
+        $brand = Brand::get();
+
+        return view('create', ['categories' => $category, 'brands' => $brand]);
     }
     
-    public function store(){
-        $check_book = request()->validate([
-            ['title' => 'required'],
-            ['page' => 'required'],
-            ['author' => 'required'],
-            ['price' => 'required']
-        ]);
+    public function store(BookCreateRequest $request) {
+        $search = Category::where('name', request('category_name'))->where('brand_id', request('brand_id'))->get('id')->modelKeys();
+        $flag = $search[0] ?? 'none';
 
-        Book::create([
-            "title" => $check_book->post('title'),
-            "page" => $check_book->post('page'),
-            "author" => $check_book->post('author'),
-            "price" => $check_book->post('price')
+        if($flag == 'none'){
+            Category::create([
+                'name' => request('category_name'),
+                'brand_id' => request('brand_id')
+            ]);
+        }
+        
+        // $a = Category::where('name', request('category_name'))->where('brand_id', request('brand_id'))->first();
+        $match = Category::isexist(request('category_name'), request('brand_id'))->first();
+
+        $book_name = request('title');
+
+        $book = Book::create([
+            "title" => request('title'),
+            "page" => request('page'),
+            "author" => request('author'),
+            "price" => request('price'),
+            "category_id" => $match->id
+        ]);
+        
+        $book->modifylogs()->create([
+            "log" => "{$book_name} 책을 생성함.",
+            "user_id" => Auth::id()
         ]);
 
         return redirect('/');
     }
 
     public function edit(){
-        $edit_book = Book::find(request()->get('id'));
-
-        return view('edit', ['edit_book' => $edit_book]);
+        $id = request()->get('id');
+        $edit_book = Book::find($id);
+        $category = Category::get();
+        
+        return view('edit', ['edit_book' => $edit_book, 'category' => $category]);
     }
 
     public function update() {
@@ -50,49 +75,42 @@ class HomeController extends Controller {
         $update_book->page = request()->post('page');
         $update_book->author = request()->post('author');
         $update_book->price = request()->post('price');
+        $update_book->category_id = request()->post('category_id');
 
         $update_book->save();
+
+        $book_name = request()->post('title');
+        
+        Modifylog::create([
+            'log' => "{$book_name} 정보를 수정함.",
+            'user_id' => Auth::id(),
+            'book_id' => $book_id
+        ]);
 
         return redirect('/');
     }
 
     public function delete() {
-        $delete_book = Book::find(request()->get('id'));
+        $delete_book = Book::find(request()->path());
+
+        Modifylog::create([
+            'log' => "{$delete_book->title}을 삭제했음.",
+            'user_id' => Auth::id(),
+            'book_id' => $delete_book->id,
+        ]);
+
         $delete_book->delete();
         
-        // // $last_book = Book::where("id", count($books)) -> first();
-        // $last_book = Book::orderBy('id') -> first();
-        // $last_book -> delete();
-
         return redirect('/');
     }
+
+    public function profile() {
+        // $logs = Modifylog::where('book_id', request()->id)->join('users', 'user_id', '=', 'users.id')->get();
+        $logs = Modifylog::selectlog(request()->id)->join('users', 'user_id', '=', 'users.id')->get();
+        
+        // Modifylog::join('books', 'book_id', '=', 'books.id')->select('modifylogs.user_id', 'modifylogs.log', 'title')->
+        // where('user_id', Auth::user()->id)->get();
+
+        return view('profile', ['user' => Auth::user(), 'logs' => $logs]);
+    }
 }
-
-// $books = Book::get();
-
-//         foreach ($books as $book) {
-//             echo $book->id . "<br>";
-//             echo $book->title . "<br>";
-//             echo "쪽수 :" . $book->page . "<br>";
-//             echo "저자 :" . $book->author . "<br>";
-//             echo "가격 :" . $book->price . "<br>";
-
-//             echo "<br><br>";
-//         }
-
-        // $first_book = Book::where("id", 1)->first();
-
-        // $first_book->title = "제목3";
-        // $first_book->price = 500000000;
-
-        // $first_book->save();
-
-        // $first_book->delete();
-
-        // echo $first_book->id . "<br>";
-        // echo $first_book->title . "<br>";
-        // echo $first_book->page . "<br>";
-
-        // echo "<br><br>";
-
-        // return view("welcome");

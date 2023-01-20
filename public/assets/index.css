@@ -1,0 +1,33 @@
+* {
+    background-color: bisque;
+}
+
+button {
+    border-radius: 10px;
+}
+
+.book_container {
+    display: flex;
+    border: 1px solid black;
+    margin-top: 20px;
+}
+
+.abc {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid grey;
+    width: 200px;
+}
+
+.input_text {
+    padding: 5px;
+    margin: 5px;
+}
+
+#update_delete {
+    display: flex;
+}
+
+#admin_title {
+    margin-bottom: 10px;
+}

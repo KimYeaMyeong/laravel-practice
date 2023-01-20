@@ -1,7 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LoginController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,12 +18,24 @@ use App\Http\Controllers\HomeController;
 
 Route::get('/', [ HomeController::class, "index" ]);
 
-// Route::put("/book/{book_id}", [ ]);
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'authenticate'])->name('login_auth');
 
-Route::get('/create', [HomeController::class, "create"])->name('create');
-Route::post('/store', [HomeController::class, "store"])->name('store');
+    Route::get('/signup', [LoginController::class, 'signup_create'])->name('signup_create');
+    Route::post('/signup', [LoginController::class, 'signup'])->name('signup');
+});
 
-Route::get('/edit', [HomeController::class, "edit"])->name('edit');
-Route::post('/update', [HomeController::class, "update"])->name('update');
+Route::middleware('auth')->group(function () {
+    Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('/delete', [HomeController::class, "delete"])->name('delete');
+    Route::get('/create', [HomeController::class, "create"])->name('create');
+    Route::post('/store', [HomeController::class, "store"])->name('store');
+
+    Route::get('/edit', [HomeController::class, "edit"])->name('edit');
+    Route::post('/update', [HomeController::class, "update"])->name('update');
+
+    Route::delete('/{id}', [HomeController::class, "delete"])->name('delete');
+
+    Route::get('/profile', [HomeController::class, "profile"])->name('profile');
+});
