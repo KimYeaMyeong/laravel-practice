@@ -1,10 +1,3 @@
-// $(document).ready(function () {
-//     $('#hidden_div').on('click', function() {
-//         $('#hidden_div').html('수정 눌러서 보여짐');
-//         console.log('클릭');
-//     })
-// });
-
 let clock = document.getElementById('clock');
 
 function getTime(){
@@ -21,3 +14,6 @@ function init() {
 
 getTime();
 init();
+
+let xmlhttp;
+

@@ -1,5 +1,6 @@
 @extends('layout')
 @section('content')
+{{--@php var_dump(request()->all()); @endphp--}}
 <div class="special_container">
     <form class="was-validated" method="POST" action="{{ route('store')}}" novalidate>    
         @csrf
@@ -50,4 +51,8 @@
         <input type="submit" class="btn btn-primary mt-3 ms-2" value="생성하기">
     </form>
 </div>
+<div id="ajax_test"></div>
+<button id="ajax_btn_get">AJAX GET</button>
+<button id="ajax_btn_post">AJAX POST</button>
+<script src="assets/ajax.js"></script>
 @endsection

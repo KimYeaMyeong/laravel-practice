@@ -18,4 +18,12 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function ajax_match () {
+        $response = $this->postJson('/api/user', ['name' => 'sally']);
+
+        $response->assertStatus(201)->assertJson([
+            'created' => true,
+        ]);
+    }
 }

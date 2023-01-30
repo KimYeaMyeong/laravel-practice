@@ -24,6 +24,16 @@ class HomeController extends Controller {
             'categories' => $category, 
             'brands' => $brand]);
     }
+    public function ajaxget(){
+        $data = ['name' => 'Iron Man', 'gender' => 'Man'];
+        return response()->json($data);
+    }
+
+    public function ajaxpost() {
+        $key = array_keys(request()->all())[0];
+        $data = ['key' => $key, 'value' => request($key)];
+        return response()->json($data);
+    }
 
     public function search() {
         $category = Category::distinct()->get('name');

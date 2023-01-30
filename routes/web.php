@@ -20,6 +20,9 @@ Route::get('/', [ HomeController::class, "index" ]);
 
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 
+Route::get('/ajaxget', [HomeController::class, 'ajaxget'])->name('ajaxget');
+Route::post('/ajaxpost', [HomeController::class, 'ajaxpost'])->name('ajaxpost');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'authenticate'])->name('login_auth');
