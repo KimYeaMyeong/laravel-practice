@@ -17,4 +17,8 @@ class Book extends Model {
     public function modifylogs () {
         return $this->hasMany(Modifylog::class);
     }
+
+    public function scopeFindByCategoryId($query, $category_id){
+        $query->where('category_id', $category_id);
+    }
 }

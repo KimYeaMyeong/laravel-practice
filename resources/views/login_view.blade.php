@@ -1,22 +1,30 @@
 @extends('layout')
 @section('content')
-
-    <form method="POST" action="{{ route('login_auth') }}">
+<div class="special_container">
+    <form class="was-validated" method="POST" action="{{ route('login_auth') }}" novalidate>
         @csrf
-        <input type="text" name="email" placeholder='아이디' class="input_text"><br/>
+
+        <div class="mb-1">
+            <label for="email" class="form-label">아이디</label><br/>
+            <input type="text" class="form-control" name="email" required><br/>
+        </div>
         @error('email')
         <div>{{$message}}</div>
         @enderror
-        <input type="password" name="password" placeholder='비밀번호' class="input_text"><br/>
+
+        <div class="mb-1">
+            <label for="password" class="form-label">비밀번호</label><br/>
+            <input type="password" class="form-control" name="password" required><br/>
+        </div>
         @error('password')
         <div>{{$message}}</div>
         @enderror
         
-        <input type="submit" value="로그인">
+        <input type="submit" class="btn btn-primary" value="로그인">
     </form>
 
     @if(session('error'))
         <div>{{session('error')}}</div>
     @endif
-
+</div>
 @endsection

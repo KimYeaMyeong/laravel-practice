@@ -26,10 +26,10 @@ class BookCreateRequest extends FormRequest
 
     public function messages() {
         return [
-            'title' => '제목오류',
-            'page' => '페이지오류',
-            'author' => '저자오류',
-            'price' => '가격오류',
+            'title' => '제목을 입력하세요.',
+            'page' => '페이지 수를 입력하세요.',
+            'author' => '저자를 입력하세요.',
+            'price' => '가격을 입력하세요.',
         ];
     }
 }

@@ -22,7 +22,7 @@ class Modifylog extends Model {
     //     static::addGlobalScope(new AncientScope);
     // }
 
-    public function scopeSelectlog($query, $type){
+    public function scopeFindByBookId($query, $type){
         $query->where('book_id', $type);
     }
 }

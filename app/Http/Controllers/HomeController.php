@@ -15,8 +15,52 @@ use Illuminate\Validation\Validator;
 class HomeController extends Controller {
     public function index() {
         $books = Book::get();
+        $category = Category::distinct()->get('name');
+        $brand = Brand::get();
         
-        return view('index', ['books' => $books, 'user' => Auth::user() ?? 'none']);
+        return view('index', [
+            'books' => $books, 
+            'user' => Auth::user() ?? 'none', 
+            'categories' => $category, 
+            'brands' => $brand]);
+    }
+
+    public function search() {
+        $category = Category::distinct()->get('name');
+        $brand = Brand::get();
+        $books = array();
+
+        if(request()->category_name == 'default'){
+            if(request()->brand_id == 'default'){
+                return redirect('/');
+            }
+            else {
+                $match = Category::findByBrandId(request('brand_id'))->get();
+                foreach($match as $category_data){
+                    $search_book = Book::findByCategoryId($category_data->id)->get()->all();
+                    $books = array_merge($books, $search_book);
+                }
+            }
+        }
+        else{
+            if(request()->brand_id == 'default'){
+                $match = Category::findByCategoryName(request()->category_name)->get();
+                foreach($match as $book_data){
+                    $search_book = Book::findByCategoryId($book_data->id)->get()->all();
+                    $books = array_merge($books, $search_book);
+                }
+            }
+            else{
+                $match_id = Category::findOne(request('category_name'),request('brand_id'))->get()->first()->id;
+                $books = Book::findByCategoryId($match_id)->get();
+            }
+        }
+
+        return view('index', [
+            'books' => $books, 
+            'user' => Auth::user() ?? 'none', 
+            'categories' => $category, 
+            'brands' => $brand]);
     }
 
     public function create(){
@@ -27,7 +71,7 @@ class HomeController extends Controller {
     }
     
     public function store(BookCreateRequest $request) {
-        $search = Category::where('name', request('category_name'))->where('brand_id', request('brand_id'))->get('id')->modelKeys();
+        $search = Category::findOne(request('category_name'), request('brand_id'))->get('id')->modelKeys();
         $flag = $search[0] ?? 'none';
 
         if($flag == 'none'){
@@ -37,8 +81,7 @@ class HomeController extends Controller {
             ]);
         }
         
-        // $a = Category::where('name', request('category_name'))->where('brand_id', request('brand_id'))->first();
-        $match = Category::isexist(request('category_name'), request('brand_id'))->first();
+        $match = Category::findOne(request('category_name'), request('brand_id'))->first();
 
         $book_name = request('title');
 
@@ -59,32 +102,51 @@ class HomeController extends Controller {
     }
 
     public function edit(){
-        $id = request()->get('id');
-        $edit_book = Book::find($id);
-        $category = Category::get();
+        $edit_book = Book::find(request('id'));
+        $category = Category::distinct()->get('name');
+        $brand = Brand::get();
+
+        $default_category = $edit_book->category->name;
+        $default_brand = $edit_book->category->brand->name;
         
-        return view('edit', ['edit_book' => $edit_book, 'category' => $category]);
+        return view('edit', [
+            'edit_book' => $edit_book,
+            'categories' => $category, 
+            'brands' => $brand,
+            'default_category' => $default_category,
+            'default_brand' => $default_brand
+        ]);
     }
 
-    public function update() {
-        $book_id = request()->get('id');
+    public function update(BookCreateRequest $request) {
+        $search = Category::findOne(request('category_name'), request('brand_id'))->get('id')->modelKeys();
+        $flag = $search[0] ?? 'none';
 
-        $update_book = Book::find($book_id);
+        if($flag == 'none'){
+            Category::create([
+                'name' => request('category_name'),
+                'brand_id' => request('brand_id')
+            ]);
+        }
+        
+        $match_id = Category::findOne(request('category_name'), request('brand_id'))->first()->id;
 
-        $update_book->title = request()->post('title');
-        $update_book->page = request()->post('page');
-        $update_book->author = request()->post('author');
-        $update_book->price = request()->post('price');
-        $update_book->category_id = request()->post('category_id');
+        $book_name = request('title');
+
+        $update_book = Book::find(request('id'));
+
+        $update_book->title = request('title');
+        $update_book->page = request('page');
+        $update_book->author = request('author');
+        $update_book->price = request('price');
+        $update_book->category_id = $match_id;
 
         $update_book->save();
 
-        $book_name = request()->post('title');
-        
         Modifylog::create([
             'log' => "{$book_name} 정보를 수정함.",
             'user_id' => Auth::id(),
-            'book_id' => $book_id
+            'book_id' => request('id')
         ]);
 
         return redirect('/');
@@ -105,12 +167,8 @@ class HomeController extends Controller {
     }
 
     public function profile() {
-        // $logs = Modifylog::where('book_id', request()->id)->join('users', 'user_id', '=', 'users.id')->get();
-        $logs = Modifylog::selectlog(request()->id)->join('users', 'user_id', '=', 'users.id')->get();
+        $logs = Modifylog::findByBookId(request()->id)->join('users', 'user_id', '=', 'users.id')->get();
         
-        // Modifylog::join('books', 'book_id', '=', 'books.id')->select('modifylogs.user_id', 'modifylogs.log', 'title')->
-        // where('user_id', Auth::user()->id)->get();
-
         return view('profile', ['user' => Auth::user(), 'logs' => $logs]);
     }
 }
